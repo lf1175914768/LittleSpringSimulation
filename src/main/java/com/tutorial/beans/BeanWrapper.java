@@ -1,7 +1,6 @@
 package com.tutorial.beans;
 
 import java.beans.PropertyDescriptor;
-import java.beans.PropertyEditor;
 
 /**
  * The central interface of Spring's low-level JavaBeans infrastructure.
