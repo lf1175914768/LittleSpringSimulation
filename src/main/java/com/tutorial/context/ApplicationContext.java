@@ -37,7 +37,7 @@ import com.tutorial.core.io.support.ResourcePatternResolver;
  * @see com.tutorial.core.io.ResourceLoader
  */
 public interface ApplicationContext extends EnvironmentCapable, ListableBeanFactory, MessageSource, 
-		HierarchicalBeanFactory, ApplicationEventPulisher, ResourcePatternResolver {
+		HierarchicalBeanFactory, ApplicationEventPublisher, ResourcePatternResolver {
 	
 	/**
 	 * Return the unique id of this application context.

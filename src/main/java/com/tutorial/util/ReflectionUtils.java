@@ -90,6 +90,44 @@ public class ReflectionUtils {
 	}
 
 	/**
+	 * Invoke the given callback on all fields in the target class, going up the
+	 * class hierarchy to get all declared fields.
+	 * @param clazz the target class to analyze
+	 * @param fc the callback to invoke for each field
+	 */
+	public static void doWithFields(Class<?> clazz, FieldCallback fc) throws IllegalArgumentException {
+		doWithFields(clazz, fc, null);
+	}
+
+	/**
+	 * Invoke the given callback on all fields in the target class, going up the
+	 * class hierarchy to get all declared fields.
+	 * @param clazz the target class to analyze
+	 * @param fc the callback to invoke for each field
+	 * @param ff the filter that determines the fields to apply the callback to
+	 */
+	public static void doWithFields(Class<?> clazz, FieldCallback fc, FieldFilter ff) throws IllegalArgumentException {
+		// Keep backing up the inheritance hierarchy.
+		Class<?> targetClass = clazz;
+		do {
+			Field[] fields = targetClass.getDeclaredFields();
+			for (Field field : fields) {
+				// Skip static and final fields 
+				if (ff != null && !ff.matches(field)) {
+					continue;
+				}
+				try {
+					fc.doWith(field);
+				} catch (IllegalAccessException ex) {
+					throw new IllegalStateException(
+							"Shouldn't be illegal to access field '" + field.getName() + "': " + ex);
+				}
+			} 
+			targetClass = targetClass.getSuperclass();
+		} while (targetClass != null && targetClass != Object.class);
+	}
+
+	/**
 	 * Handle the given invocation target exception. Should only be called if no
 	 * checked exception is expected to be thrown by the target method.
 	 * <p>Throws the underlying RuntimeException or Error in case of such a root
@@ -362,6 +400,18 @@ public class ReflectionUtils {
 	}
 	
 	/**
+	 * Callback interface invoked on each field in the hierarchy.
+	 */
+	public interface FieldCallback {
+		
+		/**
+		 * Perform an operation using the given field.
+		 * @param field the field to operate on
+		 */
+		void doWith(Field field) throws IllegalArgumentException, IllegalAccessException;
+	}
+	
+	/**
 	 * Callback optionally used to filter methods to be operated on by a method callback.
 	 */
 	public interface MethodFilter {
@@ -371,6 +421,18 @@ public class ReflectionUtils {
 		 * @param method the method to check
 		 */
 		boolean matches(Method method);
+	}
+	
+	/**
+	 * Callback optionally used to filter fields to be operated on by a field callback.
+	 */
+	public interface FieldFilter {
+		
+		/**
+		 * Determine whether the given field matches.
+		 * @param field the field to check
+		 */
+		boolean matches(Field field);
 	}
 
 }
